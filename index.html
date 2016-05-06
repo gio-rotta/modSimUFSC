@@ -1,0 +1,542 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<style>
+	#mundo {
+		height: 200px;
+		background: url('img/grass.png');
+		background-size: 5%;
+		padding: 15px 0px;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	.rua {
+		margin-top: 50px;
+		width: 100%;
+		height: 72px;
+		background: url('img/street.jpg');
+		background-size: 45px auto;
+		padding: 20px 0;
+	}
+
+	.estacaoCarregamento {
+		-moz-box-shadow:    inset 0 0 15px #333;
+   		-webkit-box-shadow: inset 0 0 15px #333;
+   		box-shadow:         inset 0 0 15px #333;
+		position: absolute;
+		width: 120px;
+		height: 60px;
+		background-color: #666;
+		border: 2px dashed #C4A655;
+		color: rgba(223, 176, 55, 0.75);
+		font-weight: bold;
+		text-align: center;
+		line-height: 60px;
+		letter-spacing: 1px;
+		font-size: 10px;
+	}
+
+	.estacaoC1 {
+		margin-left: 460px;
+	}
+
+	.estacaoC2 {
+		margin-top: 110px;
+		margin-left: 460px;
+	}
+
+	.estacaoP1 {
+		margin-left: 920px;
+	}
+
+	[class^=caminhao-] {
+		background-position: center center;
+		background-repeat: no-repeat;
+		background-size: contain;
+		transform: rotate(180deg);
+		height: 30px;
+		width: 50px;
+		position: absolute;
+		z-index: 2;
+	}
+
+	.caminhao-1 {
+		background-image: url('img/truck1.png');
+	}
+
+	.caminhao-2 {
+		background-image: url('img/truck2.png');
+	}
+
+	.caminhao-3 {
+		background-image: url('img/truck3.png');
+	}
+
+	.caminhao-4 {
+		background-image: url('img/truck4.png');
+	}
+
+	.carregado {
+		margin-left: 30px;
+		background-position: center center;
+		background-repeat: no-repeat;
+		background-size: contain;
+		background-image: url('img/carreta.png');
+		height:30px;
+		width: 100px;
+	}
+
+	.fila {
+		width: auto;
+		padding: 5px;
+	    -moz-box-shadow:     0 0 15px #000;
+   		-webkit-box-shadow:  0 0 15px #000;
+   		box-shadow:          0 0 15px #000;
+	}
+
+	.fila-carregamento {
+		position: absolute;
+		top: 20px;
+		margin-left: 340px;
+	}
+
+	.fila-pesagem {
+		position: absolute;
+		top: 20px;
+		margin-left: 800px;
+	}
+
+	.contador {
+		position: absolute;
+		bottom: 10px;
+    	right: 10px;
+    	font-size: x-large;
+    	margin: 20px;
+		color: white;
+	}
+
+	.form-group {
+    	margin-bottom: 5px;
+	}
+
+	.well-sm {
+		margin-bottom: 10px;
+	}
+
+	@media (min-width: 768px) { 
+	.modal-dialog {
+    	width: 900px !important;
+    	margin: 30px auto;
+	}
+	}
+
+	</style>
+	<body>
+		<div class="container" id="app">
+  			<div class="row">
+  				<div class="col-md-8">
+  					<h2>Modelagem sistema de pesagem de caminhões</h2>
+  				</div>
+  				<div class="col-md-4">
+  				 	<h2 class="acao-inicio">
+  						<button class="btn btn-primary pull-right" data-toggle="modal" data-target="#myModal">
+  							<span class="glyphicon glyphicon-cog"></span>
+  							Configurar Simulação
+  						</button>
+  					</h2>
+  					<h2 class="acao-pausa hidden">
+  					 	<button class="btn btn-danger pull-right finish">
+  							<span class="glyphicon glyphicon-stop"></span>
+  							Terminar Simulação
+  						</button>
+  						<button class="btn btn-warning pull-right pause" style='margin-right: 5px;'>
+  							<span class="glyphicon glyphicon-pause"></span>
+  							Pausar Simulação
+  						</button>
+  						<button class="btn btn-success pull-right resume hidden" style='margin-right: 5px;'>
+  							<span class="glyphicon glyphicon-play"></span>
+  							Continuar Simulação
+  						</button>
+  					</h2>
+  				</div>
+  			</div>
+  			<div id="introducao">
+	  			<div class="row">
+		  			<div class="col-md-12">
+		  				<div class="alert alert-info alert-dismissible" role="alert">
+		  				  	<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			  					<div href="#" class="alert-link">
+			  						<h4>Descrição do sistema a ser simulado</h4>
+			  						<p> O sistema, representado pela figura abaixo, é
+										composto de caminhões de carga (entidades). Estes são usados para transportar pedras
+										britadas, desde um terminal de cargas até o leito de uma estrada em construção. Cada
+										caminhão realiza três atividades em seqüência: carregamento, pesagem e
+										transporte/descarregamento). O carregamento é realizado por uma de duas máquinas de
+										carga. Depois de carregados, eles devem ser imediatamente pesados numa balança, logo à
+										frente do terminal de carga. Uma vez terminada a pesagem, o caminhão realiza uma
+										pequena viagem até a estrada onde, após descarregar, volta ao terminal de carga.
+									</p>
+									<p>
+										À frente de cada um dos recursos (carregador e balança) existem áreas de espera (filas). O
+										recurso Carregador tem capacidade dupla, isto é, pode atender até duas entidades ao
+										mesmo tempo. O recurso Balança atende apenas uma entidade por vez.
+									</p>
+									<p>
+										No momento em que uma entidade toma um recurso (carregador ou balança), esta passa a
+										ser por ele servida durante um período de tempo. Na estação de Carregamento esse tempo
+										é denominado Tempo de Carga (TC). Na Balança o serviço é denominado de Tempo de
+										Pesagem (TP). Estes tempos poderão ser determinísticos (constantes) ou aleatórios. No
+										último caso, devem obedecer a uma das seguintes distribuições teóricas de probabilidades:
+										Normal, Exponencial, Triangular ou Uniforme.
+									</p>
+									<p>
+										No caso da atividade viagem, não há nenhum recurso envolvido. Trata-se de uma atividade
+										do tipo delay, isto é, a entidade sofre um atraso que na simulação corresponde ao seu
+										tempo de deslocamento na viagem de ida, tempo de descarregamento em algum ponto do
+										trajeto e tempo de retorno ao posto de carregamento. Denomina-se este delay de Tempo de
+										Transporte (TT). Este tempo também, poderá ser determinístico (constante) ou aleatório e,
+										também, obedecer a uma das distribuições teóricas de probabilidades (Normal,
+										Exponencial, Triangular ou Uniforme).
+									</p>
+			  					</a>
+							</div>
+			  			</div>
+			  		</div>
+		  		</div>
+		  	</div>
+	  		<div id="simulacao" class="hidden">
+		  		<div class="row">
+		  			<div class="col-md-12" style="overflow: hidden;">
+		  				<div class="panel panel-default">
+				  			<div id="mundo" class="panel-body">
+				  				<div class="fila fila-pesagem alert alert-warning">
+				  					<span class="glyphicon glyphicon-hourglass"></span>
+				  					<span class="numero">0</span>
+				  				</div>
+				  				<div class="fila fila-carregamento alert alert-warning">
+				  					<span class="glyphicon glyphicon-hourglass"></span>
+				  					<span class="numero">0</span>
+				  				</div>
+				  				<div class="estacaoCarregamento estacaoC1">Carregamento C1</div>
+				  				<div class="estacaoCarregamento estacaoC2">Carregamento C2</div>
+				  				<div class="estacaoCarregamento estacaoP1">Pesagem P1</div>
+				    			<div class="rua">
+				    			</div>
+				    			<div class="contador">0</div>
+				  			</div>
+						</div>
+		  			</div>
+		  		</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="panel panel-default panel-primary estatistica">
+						  <div class="panel-heading">
+						    <h3 class="panel-title">Estatísticas Parciais</h3>
+						  </div>
+						  <div class="panel-body">
+						  	<div class="row">
+						  		<div class="col-md-12">
+								    <div class="well">
+								    	<div class="row">
+								    		<h4 class="well-title col-md-12 numero-entidades">Dados Gerais:</h4>
+								    		<div class="col-md-4">
+								    			<label>Alocação dos caminhões:</label>
+								    			<canvas id="recursos-alocados"></canvas>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Distribuição média do tempo:</label>
+								    			<canvas id="distribuicao-media"></canvas>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Distribuição média das alocações:</label>
+								    			<canvas id="alocacao-media"></canvas>	
+								    		</div>	
+								    	</div>
+								    </div>
+								</div>
+							  	<div class="col-md-4">
+								    <div class="well">
+								    	<div class="row">
+								    		<h4 class="well-title col-md-12 numero-entidades">a) Numero de Entidades nas Filas:</h4>
+								    		<span class="col-md-12">Fila de carregamento:</span>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="fila-carregamento-min" class="col-md-12"></span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="fila-carregamento-med" class="col-md-12">0</span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="fila-carregamento-max" class="col-md-12"></span>	
+								    		</div>	
+								    		<br />
+								    		<span class="col-md-12">Fila de Pesagem:</span>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="fila-pesagem-min" class="col-md-12"></span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="fila-pesagem-med" class="col-md-12"></span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="fila-pesagem-max" class="col-md-12"></span>	
+								    		</div>		
+								    	</div>
+								    </div>
+								</div>
+								<div class="col-md-4">
+							    	<div class="well">
+							    	    <div class="row">
+								    		<h4 class="well-title col-md-12">b) Taxa de ocupação dos recursos:</h4>
+								    		<span class="col-md-12">Carregamento:</span>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="carregamento-min" class="col-md-12"></span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="carregamento-med" class="col-md-12"></span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="carregamento-max" class="col-md-12"></span>	
+								    		</div>	
+								    		<br />
+								    		<span class="col-md-12">Pesagem:</span>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="pesagem-min" class="col-md-12"></span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="pesagem-med" class="col-md-12"></span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="pesagem-max" class="col-md-12"></span>	
+								    		</div>	
+								    	</div>
+							    	</div>
+							    </div>
+							    <div class="col-md-4">
+							    	<div class="well">
+							    	    <div class="row">
+								    		<h4 class="well-title col-md-12">c) Tempo de uma entidade na Fila:</h4>
+								    		<span class="col-md-12">Fila de Carregamento:</span>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="entidade-fila-carregamento-min" class="col-md-12">0</span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="entidade-fila-carregamento-med" class="col-md-12">0</span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="entidade-fila-carregamento-max" class="col-md-12">0</span>	
+								    		</div>	
+								    		<br />
+								    		<span class="col-md-12">Fila de Pesagem:</span>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="entidade-fila-pesagem-min" class="col-md-12">0</span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="entidade-fila-pesagem-med" class="col-md-12">0</span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="entidade-fila-pesagem-max" class="col-md-12">0</span>	
+								    		</div>	
+								    	</div>
+							    	</div>
+							    </div>
+							    <div class="col-md-4">
+							    	<div class="well">
+							    	    <div class="row">
+								    		<h4 class="well-title col-md-12">d) Tempo do Ciclo:</h4>
+								    		<div class="col-md-4">
+								    			<label>Minímo</label>
+								    			<span id="ciclo-min" class="col-md-12"></span>	
+								    		</div>
+								    		<div class="col-md-4">
+								    			<label>Médio</label>
+								    			<span id="ciclo-med" class="col-md-12"></span>	
+								    		</div>	
+								    		<div class="col-md-4">
+								    			<label>Máximo</label>
+								    			<span id="ciclo-max" class="col-md-12"></span>	
+								    		</div>
+								    	</div>
+							    	</div>
+							    </div>
+							    <div class="col-md-4">
+							    	<div class="well">
+							    	    <div class="row">
+								    		<h4 class="well-title col-md-12">e) Contador Viagens e Entidades:</h4>
+								    		<div class="col-md-6">
+								    			<label>Viagens concluídas</label>
+								    			<span id="viagens" class="col-md-12"></span>	
+								    		</div>
+								    		<div class="col-md-6">
+								    			<label>Entidades</label>
+								    			<span id="entidades" class="col-md-12"></span>	
+								    		</div>	
+								    	</div>
+							    	</div>
+							    </div>
+							</div>
+						  </div>
+					  	</div>
+				  	</div>
+			  	</div>
+			 </div>
+		</div>
+
+		 <div class="modal col-md-12 fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h4 class="modal-title">Configurar Simulação</h4>
+		      </div>
+		      <div class="modal-body">
+		      	<div class="row">
+		      		<div class="col-md-12">
+				      	<div class="well well-sm">
+			    			<label>Tempo do passo da simulação:</label>
+			    			<select class="passo-simulacao">
+			    				<option value="500">.5 segundo</option>
+			    				<option value="1000" selected>1 segundo</option>
+			    				<option value="2000">2 segundos</option>
+			    			</select>	
+			    		</div>
+			    	</div>
+		    		<div class="col-md-12">
+		    			<div class="well well-sm">
+		    				<label>Número de caminhões:</label>
+		    				<input type='text' name="n-entidades" class="n-entidades" value="5"></input>
+		    			</div>
+		    		</div>
+		    		<div class="col-md-12">
+		    			<div class="well well-sm">
+		    				<label>Número de passos da simulação:</label>
+		    				<input type='text' name="n-passos" class="n-passos" value="100"></input>
+		    			</div>
+		    		</div>
+			        <div class="col-md-4">
+			        	<div class="well well-sm">
+			        		<div class="row carregamento">
+				    			<label class="col-md-12">Função de tempo de carregamento:</label>
+				    			<span class="col-md-12 form-group"><input type="radio" name="carregamento" value="constante" checked>Constante
+				    				<input type="text" size="4" name="constante" value="5"/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="carregamento" value="aleatorio">Aleatória
+				    				<input type="text" size="4" name="limite" style="margin-left:5px" placeholder="max" value=""/>	
+				    				<input type="text" size="4" name="base"  placeholder="min" value=""/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="carregamento" value="normal">Normal
+									<input type="text" size="6" name="media" style="margin-left:5px" placeholder="media" value=""/>
+									<input type="text" size="6" name="desvPadrao"  placeholder="d. padrão" value=""/>
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="carregamento" value="uniforme">Uniforme
+				    			<input type="text" size="4" name="limite" style="margin-left:5px" placeholder="max" value=""/>	
+				    				<input type="text" size="4" name="base"  placeholder="min" value=""/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="carregamento" value="exponencial">Exponencial <input type="text" size="4" name="lambda"  placeholder="lambda" value=""/>	</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="carregamento" value="triangular">Triangular
+				    				<input type="text" size="4" name="a"  placeholder="a" value=""/>
+				    				<input type="text" size="4" name="b" style="margin-left:5px" placeholder="b" value=""/>
+				    				<input type="text" size="4" name="c" style="margin-left:5px" placeholder="c" value=""/>
+				    			</span>
+				    		</div>
+		    			</div>	
+		    		</div>
+		    		<div class="col-md-4">
+			        	<div class="well well-sm">
+			        		<div class="row pesagem">
+				    			<label class="col-md-12">Função de tempo de pesagem:</label>
+				    			<span class="col-md-12 form-group"><input type="radio" name="pesagem" value="constante" checked>Constante
+				    				<input type="text" size="4" name="constante" value="5"/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="pesagem" value="aleatorio">Aleatória
+				    				<input type="text" size="4" name="limite" style="margin-left:5px" placeholder="max" value=""/>	
+				    				<input type="text" size="4" name="base"  placeholder="min" value=""/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="pesagem" value="normal">Normal
+									<input type="text" size="6" name="media" style="margin-left:5px" placeholder="media" value=""/>
+									<input type="text" size="6" name="desvPadrao"  placeholder="d. padrão" value=""/>
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="pesagem" value="uniforme">Uniforme
+				    			<input type="text" size="4" name="limite" style="margin-left:5px" placeholder="max" value=""/>	
+				    				<input type="text" size="4" name="base"  placeholder="min" value=""/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="pesagem" value="exponencial">Exponencial <input type="text" size="4" name="lambda"  placeholder="lambda" value=""/>	</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="pesagem" value="triangular">Triangular
+				    				<input type="text" size="4" name="a"  placeholder="a" value=""/>
+				    				<input type="text" size="4" name="b" style="margin-left:5px" placeholder="b" value=""/>
+				    				<input type="text" size="4" name="c" style="margin-left:5px" placeholder="c" value=""/>
+				    			</span>
+				    		</div>
+		    			</div>	
+		    		</div>
+		    		<div class="col-md-4">
+			        	<div class="well well-sm">
+			        		<div class="row viagem">
+				    			<label class="col-md-12">Função de tempo de viagem:</label>
+				    			<span class="col-md-12 form-group"><input type="radio" name="viagem" value="constante" checked>Constante
+				    				<input type="text" size="4" name="constante" value="5"/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="viagem" value="aleatorio">Aleatória
+				    				<input type="text" size="4" name="limite" style="margin-left:5px" placeholder="max" value=""/>	
+				    				<input type="text" size="4" name="base"  placeholder="min" value=""/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="viagem" value="normal">Normal
+									<input type="text" size="6" name="media" style="margin-left:5px" placeholder="media" value=""/>
+									<input type="text" size="6" name="desvPadrao"  placeholder="d. padrão" value=""/>
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="viagem" value="uniforme">Uniforme
+				    			<input type="text" size="4" name="limite" style="margin-left:5px" placeholder="max" value=""/>	
+				    				<input type="text" size="4" name="base"  placeholder="min" value=""/>	
+				    			</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="viagem" value="exponencial">Exponencial <input type="text" size="4" name="lambda"  placeholder="lambda" value=""/>	</span>	
+				    			<span class="col-md-12 form-group"><input type="radio" name="viagem" value="triangular">Triangular
+				    				<input type="text" size="4" name="a"  placeholder="a" value=""/>
+				    				<input type="text" size="4" name="b" style="margin-left:5px" placeholder="b" value=""/>
+				    				<input type="text" size="4" name="c" style="margin-left:5px" placeholder="c" value=""/>
+				    			</span>
+				    		</div>
+		    			</div>	
+		    	</div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default cancel-modal" data-dismiss="modal">Cancelar</button>
+		        <button type="button" class="btn btn-primary iniciar-simulacao"><span class="glyphicon glyphicon-play"></span> Iniciar Simulação</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
+		<script src="js/jquery-1.12.3.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/underscore.min.js"></script>
+		<script src="js/backbone-min.js"></script>
+		<script src="js/async.js"></script>
+		<script src="js/models.js"></script>
+		<script src="js/views.js"></script>
+		<script src="js/chart.js"></script>
+	    <script type="text/javascript">
+	      	$(function() {
+		        var configuracao = new Configuracao();
+	      	});
+	    </script>
+	</body>
+</html>
