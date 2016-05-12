@@ -181,7 +181,6 @@ var Mundo = Backbone.View.extend({
         that.collection.listaFilaPesagem.length, that.collection.pesagem.length, that.collection.viagem.length);
         that.alocarCaminhaoNoCarregamento();
         that.alocarCaminhaoNaPesagem();
-        that.realizarViagem();
         that.atualizarContador();
       }
     }, this.options.velocidade );
@@ -201,24 +200,24 @@ var Mundo = Backbone.View.extend({
   pause: function(event) {
     event.preventDefault();
     this.isPaused = true;
-    this.c1Timeout.pause();
-    this.c2Timeout.pause();
-    this.p1Timeout.pause();
+    this.c1Timeout && this.c1Timeout.pause();
+    this.c2Timeout && this.c2Timeout.pause();
+    this.p1Timeout && this.p1Timeout.pause();
     for (var i = 0; i < this.vTimeout.length; i++) {
-      this.vTimeout[i].pause();
+      this.vTimeout[i] && this.vTimeout[i].pause();
     };
     $('.pause').toggleClass('hidden');
     $('.resume').toggleClass('hidden');
   },
 
-  resume: function() {
+  resume: function(event) {
     event.preventDefault();
     this.isPaused = false;
-    this.c1Timeout.resume();
-    this.c2Timeout.resume();
-    this.p1Timeout.resume();
+    this.c1Timeout && this.c1Timeout.resume();
+    this.c2Timeout && this.c2Timeout.resume();
+    this.p1Timeout && this.p1Timeout.resume();
     for (var i = 0; i < this.vTimeout.length; i++) {
-      this.vTimeout[i].resume();
+      this.vTimeout[i] && this.vTimeout[i].resume();
     };
     $('.pause').toggleClass('hidden');
     $('.resume').toggleClass('hidden');
@@ -396,6 +395,7 @@ var Mundo = Backbone.View.extend({
           caminhao.linha.tempoDaPesagem = tempo/1000;
           that.estatistica.atualizarLinha(caminhao.linha);
           that.collection.alocarCaminhaoNaViagem(caminhao);
+          that.realizarViagem();
         }
       }, tempo);
     }
@@ -405,27 +405,29 @@ var Mundo = Backbone.View.extend({
     var tempo = this.aplicarAlgoritmo(this.options.funcaoViagem, this.options.parametrosFuncaoViagem);
     var that = this;
     if (this.collection.viagem.length > 0) {
-      this.vTimeout = new Timer( function() {
-        if (that.collection.viagem.length > 0) {
-          var caminhao = that.collection.viagem.shift();
-          caminhao.linha.tempoDeViagem = tempo/1000;
-          caminhao.linha.tempoDoSistema = that.counter - caminhao.linha.tempoDeChegadaNoRelogio;
-          that.estatistica.atualizarLinha(caminhao.linha);
-          caminhao.set({viagensConcluidas: parseInt(caminhao.get('viagensConcluidas')) + 1})
-          caminhao.set({estaCarregado: false})
-          caminhao.set({visivel:true});
-          caminhao.linha = that.estatistica.adicionarNovaLinha(that.estatistica.tabelaSimulacao.length, that.counter);
-          if (that.collection.carregamentoC1.length == 0 && that.collection.listaFilaCarregamento.length == 0) {
-            that.collection.alocarCaminhaoNoCarregamento(caminhao, "C1");
-            that.realizarCarregamentoC1();
-          } else if(that.collection.carregamentoC2.length == 0 && that.collection.listaFilaCarregamento.length == 0) {
-            that.collection.alocarCaminhaoNoCarregamento(caminhao, "C2");
-            that.realizarCarregamentoC2();
-          } else {
-            that.collection.alocarCaminhaoNaFilaCarregamento(caminhao);
-          }
+      var timerViagem = new Timer( function() {
+      if (that.collection.viagem.length > 0) {
+        var caminhao = that.collection.viagem.shift();
+        caminhao.linha.tempoDeViagem = tempo/1000;
+        caminhao.linha.tempoDoSistema = that.counter - caminhao.linha.tempoDeChegadaNoRelogio;
+        that.estatistica.atualizarLinha(caminhao.linha);
+        caminhao.set({viagensConcluidas: parseInt(caminhao.get('viagensConcluidas')) + 1})
+        caminhao.set({estaCarregado: false})
+        caminhao.set({visivel:true});
+        that.vTimeout.shift()
+        caminhao.linha = that.estatistica.adicionarNovaLinha(that.estatistica.tabelaSimulacao.length, that.counter);
+        if (that.collection.carregamentoC1.length == 0 && that.collection.listaFilaCarregamento.length == 0) {
+          that.collection.alocarCaminhaoNoCarregamento(caminhao, "C1");
+          that.realizarCarregamentoC1();
+        } else if(that.collection.carregamentoC2.length == 0 && that.collection.listaFilaCarregamento.length == 0) {
+          that.collection.alocarCaminhaoNoCarregamento(caminhao, "C2");
+          that.realizarCarregamentoC2();
+        } else {
+          that.collection.alocarCaminhaoNaFilaCarregamento(caminhao);
         }
-      }, tempo);
+      }
+    }, tempo);
+    this.vTimeout.push(timerViagem);
     }
   },
 
