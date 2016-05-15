@@ -174,19 +174,20 @@ var Mundo = Backbone.View.extend({
     this.atualizarContagemFilaPesagem();
     this.vTimeout = [];
     var that = this;
+    that.alocarCaminhaoNoCarregamento();
+    that.alocarCaminhaoNoCarregamento();
     this.lacoPrincipal = setInterval( function() {
       if(!that.isPaused) {
         that.estatistica.adicionarStatusOcupacao(that.collection.listaFilaCarregamento.length,
         that.collection.carregamentoC1.length + that.collection.carregamentoC2.length,
         that.collection.listaFilaPesagem.length, that.collection.pesagem.length, that.collection.viagem.length);
-        that.alocarCaminhaoNoCarregamento();
-        that.alocarCaminhaoNaPesagem();
         that.atualizarContador();
       }
     }, this.options.velocidade );
   },
 
-  finish: function() {
+  finish: function(event) {
+    event && event.preventDefault();
     clearInterval(this.lacoPrincipal);
     clearInterval(this.c1Timeout);
     clearInterval(this.c2Timeout);
@@ -198,7 +199,7 @@ var Mundo = Backbone.View.extend({
   },
 
   pause: function(event) {
-    event.preventDefault();
+    event && event.preventDefault();
     this.isPaused = true;
     this.c1Timeout && this.c1Timeout.pause();
     this.c2Timeout && this.c2Timeout.pause();
@@ -211,7 +212,7 @@ var Mundo = Backbone.View.extend({
   },
 
   resume: function(event) {
-    event.preventDefault();
+    event && event.preventDefault();
     this.isPaused = false;
     this.c1Timeout && this.c1Timeout.resume();
     this.c2Timeout && this.c2Timeout.resume();
@@ -335,10 +336,12 @@ var Mundo = Backbone.View.extend({
           if (that.collection.pesagem.length > 0 || that.collection.listaFilaPesagem.length > 0) {
             that.estatistica.atualizarLinha(caminhao.linha);
             that.collection.alocarCaminhaoNaFilaPesagem(caminhao);
+            that.alocarCaminhaoNoCarregamento();
           } else {
             caminhao.linha.tempoNaFilaDePesagem = 0;
             that.estatistica.atualizarLinha(caminhao.linha);
             that.collection.alocarCaminhaoNaPesagem(caminhao);
+            that.alocarCaminhaoNoCarregamento();
             that.realizarPesagem();
           }
           that.atualizarContagemFilaPesagem();
@@ -358,10 +361,12 @@ var Mundo = Backbone.View.extend({
           if (that.collection.pesagem.length > 0 || that.collection.listaFilaPesagem.length > 0) {
             that.estatistica.atualizarLinha(caminhao.linha);
             that.collection.alocarCaminhaoNaFilaPesagem(caminhao);
+            that.alocarCaminhaoNoCarregamento();
           } else {
             caminhao.linha.tempoNaFilaDePesagem = 0;
             that.estatistica.atualizarLinha(caminhao.linha);
             that.collection.alocarCaminhaoNaPesagem(caminhao);
+            that.alocarCaminhaoNoCarregamento();
             that.realizarPesagem();
           }
           that.atualizarContagemFilaPesagem();
@@ -395,6 +400,7 @@ var Mundo = Backbone.View.extend({
           caminhao.linha.tempoDaPesagem = tempo/1000;
           that.estatistica.atualizarLinha(caminhao.linha);
           that.collection.alocarCaminhaoNaViagem(caminhao);
+          that.alocarCaminhaoNaPesagem();
           that.realizarViagem();
         }
       }, tempo);
@@ -456,6 +462,7 @@ var Mundo = Backbone.View.extend({
     $contador.html(this.counter);
     this.counter++;
     if (this.counter >= this.options.numeroPassos) {
+      this.pause();
       this.finish();
     }
   }
