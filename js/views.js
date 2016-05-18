@@ -692,15 +692,6 @@ var Estatistica = Backbone.View.extend({
       });
   },
 
-  histogramaTempoSistema: function() {
-    var n = this.tabelaSimulacao.length;
-    var maximo = this.maiorTempoDoSistema;
-    var minimo = this.menorTempoDoSistema;
-    var nClasse = Math.round(Math.sqrt(n));
-    var intervalo = Math.round((maximo-minimo)/nClasse)
-
-  },
-
   atualizarGraficos: function() {
     if (!this.variaveisInicializadas && (this.tabelaSimulacao.length > 0) && (this.tabelaOcupacao.length > 0) ) {
       this.inicializarVariaveis();
